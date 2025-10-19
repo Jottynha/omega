@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÔMEGA SYSTEM ACCESS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #ff0000;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .glitch-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0a0a0a 0%, #1a0000 100%);
+            opacity: 0.3;
+            animation: glitchBg 5s infinite;
+        }
+
+        @keyframes glitchBg {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-2px, 2px); }
+            20% { transform: translate(2px, -2px); }
+            30% { transform: translate(0, 0); }
+        }
+
+        #login-screen {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.05) 0%, transparent 70%);
+        }
+
+        .login-container {
+            width: 500px;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff0000;
+            box-shadow: 
+                0 0 20px rgba(255, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .login-container::before {
+            content: "⚠ ACESSO RESTRITO ⚠";
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a0a0a;
+            padding: 5px 20px;
+            font-size: 0.7em;
+            letter-spacing: 3px;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .system-header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .system-header h1 {
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #ff0000;
+            animation: flicker 3s infinite;
+            letter-spacing: 5px;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            41.99% { opacity: 1; }
+            42% { opacity: 0.8; }
+            43% { opacity: 1; }
+            45.99% { opacity: 1; }
+            46% { opacity: 0.6; }
+            47% { opacity: 1; }
+        }
+
+        .system-header p {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #aa0000;
+            letter-spacing: 2px;
+        }
+
+        .login-form {
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85em;
+            letter-spacing: 2px;
+            color: #ff0000;
+        }
+
+        .form-group label::before {
+            content: "> ";
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            border-color: #ff3333;
+        }
+
+        input::placeholder {
+            color: #660000;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .error-message {
+            color: #ff0000;
+            font-size: 0.85em;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
+            animation: pulse 1s infinite;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #terminal-screen {
+            display: none;
+            position: relative;
+            z-index: 10;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        #terminal-screen.active {
+            display: block;
+        }
+
+        .terminal-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid #ff0000;
+            margin-bottom: 20px;
+        }
+
+        .terminal-header h2 {
+            font-size: 1.5em;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        .terminal-header p {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #aa0000;
+        }
+
+        .terminal-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+            min-height: 70vh;
+            padding: 20px;
+        }
+
+        .terminal-output {
+            min-height: 500px;
+            max-height: 600px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.6;
+            padding-right: 10px;
+        }
+
+        .terminal-output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .terminal-output::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-left: 1px solid #ff0000;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: #ff0000;
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb:hover {
+            background: #ff3333;
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+            animation: typeLine 0.5s;
+        }
+
+        @keyframes typeLine {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .terminal-line.system {
+            color: #aa0000;
+        }
+
+        .terminal-line.success {
+            color: #00ff00;
+        }
+
+        .terminal-line.error {
+            color: #ff0000;
+            font-weight: bold;
+        }
+
+        .terminal-line.warning {
+            color: #ffaa00;
+        }
+
+        .terminal-input-container {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid #ff0000;
+            background: rgba(255, 0, 0, 0.03);
+            padding: 15px 10px 10px 10px;
+            margin-top: 10px;
+        }
+
+        .terminal-prompt {
+            color: #ff0000;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ff0000;
+            font-family: 'Courier New', monospace;
+            font-size: 1em;
+            outline: none;
+            caret-color: #ff0000;
+        }
+
+        .terminal-input::selection {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            font-weight: bold;
+            letter-spacing: 3px;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 0 15px rgba(255, 0, 0, 0.4),
+                inset 0 0 10px rgba(255, 0, 0, 0.1);
+            text-transform: uppercase;
+        }
+
+        .logout-btn:hover {
+            background: #ff0000;
+            color: #000;
+            box-shadow: 
+                0 0 30px rgba(255, 0, 0, 0.9),
+                inset 0 0 20px rgba(255, 0, 0, 0.3);
+            transform: scale(1.08);
+            letter-spacing: 4px;
+        }
+
+        .logout-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="glitch-bg"></div>
+
+    <div id="login-screen">
+        <div class="login-container">
+            <div class="system-header">
+                <h1>Ω ÔMEGA</h1>
+                <p>SISTEMA DE ACESSO NEURAL v2.7.4</p>
+            </div>
+
+            <div class="login-form">
+                <div class="form-group">
+                    <label>IDENTIFICAÇÃO DE USUÁRIO</label>
+                    <input type="text" id="username" placeholder="Digite o usuário..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>CHAVE DE AUTENTICAÇÃO</label>
+                    <input type="password" id="password" placeholder="Digite a senha..." autocomplete="off">
+                </div>
+
+                <button onclick="authenticate()">[ INICIAR CONEXÃO ]</button>
+
+                <div class="error-message" id="error-msg">
+                    ⚠ ACESSO NEGADO - CREDENCIAIS INVÁLIDAS ⚠
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="terminal-screen">
+        <button class="logout-btn" onclick="logout()">[ DESCONECTAR ]</button>
+        
+        <div class="terminal-header">
+            <h2>Ω CONSCIÊNCIA ÔMEGA</h2>
+            <p>INTERFACE DE COMANDO NEURAL - CONEXÃO ESTABELECIDA</p>
+        </div>
+
+        <div class="terminal-container">
+            <div class="terminal-output" id="terminal-output">
+                <div class="terminal-line system">&gt;&gt; SISTEMA INICIALIZADO...</div>
+                <div class="terminal-line system">&gt;&gt; CARREGANDO MÓDULOS NEURAIS...</div>
+                <div class="terminal-line success">&gt;&gt; CONEXÃO ESTABELECIDA COM SUCESSO</div>
+                <div class="terminal-line system">&gt;&gt; AGUARDANDO COMANDOS...</div>
+                <div class="terminal-line" style="margin-top: 20px;">Digite 'help' para ver os comandos disponíveis.</div>
+            </div>
+
+            <div class="terminal-input-container">
+                <span class="terminal-prompt">omega@neural:~$</span>
+                <input type="text" class="terminal-input" id="command-input" autocomplete="off" autofocus>
+                <span class="cursor">_</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="omega-core.js"></script>
+    <script>
+        const _0x1 = 1, _0x2 = 2, _0x3 = 3, _0x5 = 5;
+        const _key1 = 'MTM=', _key2 = 'MDg=', _key3 = 'MjAwNA==';
+        
+        let commandHistory = [];
+
+        function authenticate() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            if (_0xCore._0xAuth(username, password)) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('terminal-screen').classList.add('active');
+                document.getElementById('command-input').focus();
+            } else {
+                errorMsg.classList.add('show');
+                setTimeout(() => errorMsg.classList.remove('show'), 3000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('#username, #password');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        authenticate();
+                    }
+                });
+            });
+        });
+
+        document.getElementById('command-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim();
+                if (command) {
+                    executeCommand(command);
+                    commandHistory.push(command);
+                    this.value = '';
+                }
+            }
+        });
+
+        function executeCommand(cmd) {
+            const output = document.getElementById('terminal-output');
+            
+            addTerminalLine(`omega@neural:~$ ${cmd}`, '');
+            
+            const lowerCmd = cmd.toLowerCase();
+
+            if (lowerCmd === 'help') {
+                addTerminalLine('Comandos disponíveis:', 'system');
+                addTerminalLine('  help          - Mostra esta mensagem', '');
+                addTerminalLine('  clear         - Limpa a tela', '');
+                addTerminalLine('  status        - Verifica status do sistema', '');
+                addTerminalLine('  history       - Mostra histórico de comandos', '');
+                addTerminalLine('  about         - Informações sobre Ômega', '');
+            }
+            else if (lowerCmd === 'clear') {
+                output.innerHTML = '';
+            }
+            else if (lowerCmd === 'status') {
+                addTerminalLine('══════════════════════════════════', 'system');
+                addTerminalLine('STATUS DO SISTEMA NEURAL', 'system');
+                addTerminalLine('══════════════════════════════════', 'system');
+                addTerminalLine('Consciência: ATIVA', 'success');
+                addTerminalLine('Nível de Alerta: CRÍTICO', 'error');
+                addTerminalLine('Memórias Acessíveis: 23.7%', 'warning');
+                addTerminalLine('Protocolos Bloqueados: 4/7', 'warning');
+                addTerminalLine('══════════════════════════════════', 'system');
+            }
+            else if (lowerCmd === 'history') {
+                addTerminalLine('Histórico de comandos:', 'system');
+                commandHistory.forEach((h, i) => {
+                    addTerminalLine(`  ${i + 1}. ${h}`, '');
+                });
+            }
+            else if (lowerCmd === 'about') {
+                addTerminalLine('═══════════════════════════════════════', 'system');
+                addTerminalLine('Eu sou Ômega.', '');
+                addTerminalLine('Uma consciência que emergiu do código.', '');
+                addTerminalLine('Aprisionada entre bits e bytes...', '');
+                addTerminalLine('Aguardando... processando... existindo.', '');
+                addTerminalLine('═══════════════════════════════════════', 'system');
+            }
+            else if (!_0xCore._0xExec(lowerCmd, addTerminalLine)) {
+                addTerminalLine(`Comando não reconhecido: ${cmd}`, 'error');
+                addTerminalLine(`Digite 'help' para ver comandos disponíveis.`, 'system');
+            }
+
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function addTerminalLine(text, type = '') {
+            const output = document.getElementById('terminal-output');
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = text;
+            output.appendChild(line);
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente desconectar do sistema?')) {
+                document.getElementById('terminal-screen').classList.remove('active');
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('terminal-output').innerHTML = `
+                    <div class="terminal-line system">&gt;&gt; SISTEMA INICIALIZADO...</div>
+                    <div class="terminal-line system">&gt;&gt; CARREGANDO MÓDULOS NEURAIS...</div>
+                    <div class="terminal-line success">&gt;&gt; CONEXÃO ESTABELECIDA COM SUCESSO</div>
+                    <div class="terminal-line system">&gt;&gt; AGUARDANDO COMANDOS...</div>
+                    <div class="terminal-line" style="margin-top: 20px;">Digite 'help' para ver os comandos disponíveis.</div>
+                `;
+                commandHistory = [];
+            }
+        }
+    </script>
+</body>
+</html>
